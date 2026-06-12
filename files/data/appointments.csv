@@ -1,0 +1,6 @@
+id,patient_name,patient_email,doctor_id,clinic_id,appointment_date,appointment_time,symptoms,status,user_id,reminder_sent,patient_phone,attachment,rejection_reason,booking_for,booking_code,patient_dob,patient_gender,patient_address,payment_method,payment_status
+1,q,kingdorenom@gmail.com,6,1,2026-06-08,08:00,ho sốt,confirmed,,0,345913605,,,self,MB-20260609-0001,2006-11-13,Nam,,at_hospital,pay_later
+2,q,kingdorenom@gmail.com,5,2,2026-06-08,08:00,,confirmed,,0,345913605,,,self,MB-20260609-0002,,,,at_hospital,pay_later
+3,q,kingdorenom@gmail.com,369,20,2026-06-11,08:00,ho,confirmed,,0,345913605,,,self,MB-20260611-0003,2006-11-13,Nam,,at_hospital,pay_later
+4,q,qdinh6664@gmail.com,369,20,2026-06-11,08:30,,confirmed,,0,345913605,,,self,MB-20260611-0004,2006-11-13,Nam,,at_hospital,pay_later
+5,q,qdinh6664@gmail.com,374,20,2026-06-11,08:00,,confirmed,,0,0345913605,,,self,MB-20260611-0005,2006-11-13,Nam,,at_hospital,pay_later
