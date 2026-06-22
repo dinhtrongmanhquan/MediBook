@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description"
+    content="MediBook - Hệ thống quản lý y tế toàn diện. Đặt lịch, quản lý hồ sơ, tư vấn trực tuyến." />
+  <title>MediBook – Hệ Thống Y Tế Toàn Diện</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Serif+Display&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/static/style.css?v=15" />
+  <!-- Leaflet CSS & JS for Map integration -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- Chart.js for Admin -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="/static/script.js?v=15"></script>
+</head>
+
+<body>
+
+  <!-- ============================================================
+       GATEWAY VIEW (MÀN HÌNH ĐẦU TIÊN KHI CHƯA ĐĂNG NHẬP)
+       ============================================================ -->
+  <div id="gatewayView"
+    style="display:flex; flex-direction:column; min-height:100vh; background: linear-gradient(135deg, var(--bg) 0%, #e0f2fe 50%, #fff 100%);">
+
+    <header style="background:transparent; box-shadow:none; position:absolute; top:0; width:100%;">
+      <div class="logo" style="color:var(--primary-dark)">
+        <div class="logo-icon" style="background:#fff; color:#ef4444">✚</div>
+        <span>MediBook</span>
+      </div>
+    </header>
+
+    <div class="container"
+      style="margin:auto; display:flex; flex-direction:column; align-items:center; justify-content:center; flex:1; padding-top:60px; position:relative; z-index:1;">
+
+      <div style="text-align:center; margin-bottom:40px;">
+        <h1 class="gateway-hero-title">Nền Tảng Y Tế<br />Dành Cho Mọi Người</h1>
+        <p class="gateway-hero-sub">
+          Vui lòng chọn vai trò của bạn để tiếp tục hoặc khám bệnh ngay không cần tài khoản.
+        </p>
+      </div>
+
+      <div class="gateway-card" style="width:100%; max-width:540px;">
+
+        <!-- Role Tabs -->
+        <div class="auth-tabs" style="margin-bottom:24px;">
+          <button class="auth-tab active" id="gtwTabPatient" onclick="switchGatewayTab('patient')">👨‍👩‍👧‍👦 Bệnh
+            nhân</button>
+          <button class="auth-tab" id="gtwTabDoctor" onclick="switchGatewayTab('doctor')">👨‍⚕️ Bác sĩ</button>
+          <button class="auth-tab" id="gtwTabAdmin" onclick="switchGatewayTab('admin')">👑 Quản trị</button>
+        </div>
+
+        <div class="form-message" id="gatewayMessage"></div>
+
+        <!-- BỆNH NHÂN FORM -->
+        <div id="gtwFormPatient" class="gateway-form active">
+          <div class="form-group">
+            <label>👤 Tên đăng nhập / Email</label>
+            <input type="text" id="gwPatientEmail" placeholder="Nhập email hoặc tên đăng nhập" />
+          </div>
+          <div class="form-group">
+            <label>🔒 Mật khẩu</label>
+            <input type="password" id="gwPatientPassword" placeholder="Nhập mật khẩu" />
+            <div style="text-align: right; margin-top: 5px;">
+              <a href="#" onclick="openForgotModal('patient')" style="font-size: 13px; color: var(--primary);">Quên mật khẩu?</a>
+            </div>
+          </div>
+          <button class="btn btn-primary btn-full" onclick="handleGatewayLogin('patient')" id="btnGwPatientLogin">🔑
+            Đăng Nhập</button>
+
+          <button class="btn btn-outline btn-full" onclick="openAuthModal('register_patient')" style="margin-top: 10px;">
+            ✨ Tạo Tài Khoản Mới
+          </button>
+
+          <div class="gateway-divider">
+            <span>Hoặc</span>
+          </div>
+
+          <button class="btn btn-full btn-guest-cta" onclick="continueAsGuest()">
+            🏥 Tiếp tục khám bệnh không cần đăng nhập
+          </button>
+        </div>
+
+        <!-- BÁC SĨ FORM -->
+        <div id="gtwFormDoctor" class="gateway-form">
+          <div class="form-group">
+            <label>👤 Tên đăng nhập / Email</label>
+            <input type="text" id="gwDoctorEmail" placeholder="Nhập email hoặc tên đăng nhập" />
+          </div>
+          <div class="form-group">
+            <label>🔒 Mật khẩu</label>
+            <input type="password" id="gwDoctorPassword" placeholder="Nhập mật khẩu" />
+            <div style="text-align: right; margin-top: 5px;">
+              <a href="#" onclick="openForgotModal('doctor')" style="font-size: 13px; color: #059669;">Quên mật khẩu?</a>
+            </div>
+          </div>
+          <button class="btn btn-primary btn-full" onclick="handleGatewayLogin('doctor')" id="btnGwDoctorLogin"
+            style="background:linear-gradient(135deg, #059669, #10b981)">🔑 Đăng Nhập Bác Sĩ</button>
+
+          <button class="btn btn-outline btn-full" onclick="openAuthModal('register_doctor')" style="margin-top: 10px; border-color: #059669; color: #059669;">
+            📝 Gửi Đơn Đăng Ký Hợp Tác
+          </button>
+        </div>
+
+        <!-- ADMIN FORM -->
+        <div id="gtwFormAdmin" class="gateway-form">
+          <div class="form-group">
+            <label>👤 Tên đăng nhập / Email Quản trị</label>
+            <input type="text" id="gwAdminEmail" placeholder="Nhập email hoặc tên đăng nhập" />
+          </div>
+          <div class="form-group">
+            <label>🔒 Mật khẩu</label>
+            <input type="password" id="gwAdminPassword" placeholder="Nhập mật khẩu" />
+          </div>
+          <button class="btn btn-primary btn-full" onclick="handleGatewayLogin('admin')" id="btnGwAdminLogin"
+            style="background:linear-gradient(135deg, #023e8a, #0077b6)">🔑 Đăng Nhập Quản Trị</button>
+        </div>
+
+      </div>
+
+      <!-- Trust badge footer -->
+      <div class="gateway-footer">
+        <div class="gateway-footer-badge">
+          🔒 Bảo mật dữ liệu theo tiêu chuẩn y tế &nbsp;•&nbsp; 🏥 Hệ thống đặt lịch toàn diện
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ============================================================
+       PATIENT VIEW
+       ============================================================ -->
+  <div id="patientView" style="display:none;">
+    <!-- HEADER BỆNH NHÂN -->
+    <header>
+      <div class="logo" onclick="showPatientSection('booking')">
+        <div class="logo-icon" style="background:#fff">✚</div>
+        <span>MediBook</span>
+      </div>
+      <nav class="header-nav" id="headerNavPatient">
+        <a href="#" class="nav-link active" onclick="showPatientSection('booking')" id="navBooking">📅 Đặt lịch</a>
+        <a href="#" class="nav-link" onclick="showPatientSection('appointments')" id="navAppointments"
+          style="display:none">📋 Lịch hẹn</a>
+        <a href="#" class="nav-link" onclick="openLookupModal()" id="navLookup">🔍 Tra cứu</a>
+        <a href="#" class="nav-link" onclick="showPatientSection('services')" id="navServices">📋 Dịch vụ</a>
+        <a href="#" class="nav-link" onclick="showPatientSection('records')" id="navRecords" style="display:none">🏥 Hồ
+          sơ bệnh án</a>
+        <a href="#" class="nav-link" onclick="showPatientSection('payments')" id="navPayments" style="display:none">💳
+          Thanh toán</a>
+        <a href="#" class="nav-link" onclick="showPatientSection('aftercare')" id="navAftercare" style="display:none">💊
+          Sau khám</a>
+      </nav>
+      <div class="header-right">
+        <!-- Guest Mode Header -->
+        <div class="header-auth" id="headerGuestPatient" style="display:none">
+          <span style="color:#fff; font-size:12px; font-weight:600; opacity:0.8; margin-right:8px;">Chế độ Khách</span>
+          <button class="btn-header btn-header-solid" onclick="backToGateway()">Đăng nhập/Đăng ký</button>
+        </div>
+        <!-- Logged In Patient Header -->
+        <div class="user-menu" id="headerUserPatient" style="display:none">
+          <div class="user-avatar" onclick="openProfileModal()" title="Thông tin cá nhân">👤</div>
+          <span class="user-name" id="headerUserNamePatient"></span>
+          <button class="btn-header btn-header-outline" onclick="openProfileModal()"
+            title="Thông tin tài khoản">⚙️</button>
+          <button class="btn-header btn-header-danger" onclick="handleLogout()" title="Đăng xuất">🚪</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- SECTION ĐẶT LỊCH -->
+    <div id="sectionBooking">
+      <div class="hero">
+        <h1>Đặt Lịch Khám<br />Sức Khỏe Online</h1>
+        <p>Tìm phòng khám gần nhà, chọn bác sĩ phù hợp & đặt lịch chỉ trong 3 bước</p>
+        <div class="steps-indicator" id="stepsIndicator">
+          <div class="steps-wrap">
+            <div class="step-dot active" id="dot1">1</div>
+            <div class="step-label">Bệnh nhân</div>
+          </div>
+          <div class="step-line" id="line1"></div>
+          <div class="steps-wrap">
+            <div class="step-dot" id="dot2">2</div>
+            <div class="step-label">BS & Khoa</div>
+          </div>
+          <div class="step-line" id="line2"></div>
+          <div class="steps-wrap">
+            <div class="step-dot" id="dot3">3</div>
+            <div class="step-label">Thời gian</div>
+          </div>
+          <div class="step-line" id="line3"></div>
+          <div class="steps-wrap">
+            <div class="step-dot" id="dot4">4</div>
+            <div class="step-label">Xác nhận</div>
+          </div>
+          <div class="step-line" id="line4"></div>
+          <div class="steps-wrap">
+            <div class="step-dot" id="dot5">5</div>
+            <div class="step-label">Hoàn tất</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="container">
+        <!-- Bước 1: Bệnh Nhân -->
+        <div class="card" id="step1">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+            <div>
+              <div class="badge badge-blue" style="margin-bottom:8px;">👤 Bước 1</div>
+              <div class="card-title">Thông Tin Bệnh Nhân</div>
+              <div class="card-sub">Lựa chọn người cần khám và điền thông tin.</div>
+            </div>
+            <div style="display:flex; gap:10px; margin-top:8px;">
+              <button class="btn btn-primary" id="btnNextStep1" onclick="goStep(2)" style="padding:8px 12px; font-size:14px;" disabled>Tiếp theo →</button>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-top:20px;">
+            <label>🎯 Bạn đặt lịch khám cho ai?</label>
+            <div style="display:flex; gap:10px; margin-top:8px;">
+              <label class="radio-card" style="flex:1;">
+                <input type="radio" name="bookingFor" value="self" checked onchange="handleBookingForChange()">
+                <div class="radio-card-content">
+                  <div style="font-size:24px;">👤</div>
+                  <div style="font-weight:600; margin-top:8px;">Bản thân</div>
+                </div>
+              </label>
+              <label class="radio-card" style="flex:1;">
+                <input type="radio" name="bookingFor" value="family" onchange="handleBookingForChange()">
+                <div class="radio-card-content">
+                  <div style="font-size:24px;">👨‍👩‍👧</div>
+                  <div style="font-weight:600; margin-top:8px;">Gia đình</div>
+                </div>
+              </label>
+              <label class="radio-card" style="flex:1;">
+                <input type="radio" name="bookingFor" value="other" onchange="handleBookingForChange()">
+                <div class="radio-card-content">
+                  <div style="font-size:24px;">🤝</div>
+                  <div style="font-weight:600; margin-top:8px;">Người khác</div>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <div id="patientFormContainer">
+            <div id="guestBookingNotice" class="alert alert-warn" style="display:none; margin-top:16px;">
+              ⚠️ Bạn đang đặt lịch với tư cách <b>Khách</b>. Vui lòng điền đầy đủ thông tin. Đăng nhập để tiết kiệm thời gian.
+            </div>
+
+            <div class="form-row" style="margin-top:20px;">
+              <div class="form-group" id="fgPatientName">
+                <label>👤 Họ và tên bệnh nhân <span style="color:var(--danger)">*</span></label>
+                <input type="text" id="patientName" placeholder="Nguyễn Văn A" oninput="clearFieldError(this)" />
+              </div>
+              <div class="form-group" id="fgPatientEmail">
+                <label>📧 Email liên hệ <span style="color:var(--danger)">*</span></label>
+                <input type="email" id="patientEmail" placeholder="email@gmail.com" oninput="clearFieldError(this)" />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group" id="fgPatientPhone">
+                <label>📱 Số điện thoại <span style="color:var(--danger)">*</span></label>
+                <input type="tel" id="patientPhone" placeholder="0901234567" oninput="clearFieldError(this)" />
+              </div>
+              <div class="form-group" id="fgPatientCCCD">
+                <label>🪪 Số CCCD</label>
+                <input type="text" id="patientCCCD" placeholder="Số Căn cước công dân" oninput="clearFieldError(this)" />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>📅 Ngày sinh</label>
+                <input type="date" id="patientDOB" />
+              </div>
+              <div class="form-group">
+                <label>⚧ Giới tính</label>
+                <select id="patientGender">
+                  <option value="">-- Chọn giới tính --</option>
+                  <option value="Nam">Nam</option>
+                  <option value="Nữ">Nữ</option>
+                  <option value="Khác">Khác</option>
+                </select>
+              </div>
+            </div>
+
+
+
+            <div class="form-group" id="fgSymptoms">
+              <label>🤒 Triệu chứng / Lý do khám</label>
+              <textarea id="symptomsInput" rows="3" placeholder="Mô tả triệu chứng, biểu hiện bệnh..."></textarea>
+            </div>
+
+            <div class="form-group">
+              <label>📎 File đính kèm (Kết quả khám cũ, đơn thuốc...)</label>
+              <input type="file" id="patientAttachment" accept="image/*,.pdf" onchange="uploadAttachment(this)" />
+              <input type="hidden" id="patientAttachmentUrl" />
+              <div id="uploadStatus" style="font-size:12px; margin-top:4px; color:var(--primary)"></div>
+            </div>
+          </div>
+
+          <div id="step1Warning" style="color: var(--danger); font-size: 14px; margin-top: 16px; text-align: center; font-weight: 500; display: none;">
+            ⚠️ Vui lòng điền đủ thông tin bắt buộc
+          </div>
+        </div>
+
+        <!-- Bước 2: BS & Khoa -->
+        <div class="card" id="step2" style="display:none">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+            <div>
+              <button class="btn btn-outline" onclick="goStep(1)" style="padding:4px 8px; font-size:13px; margin-bottom:8px; border:none; background:#f1f5f9; color:#64748b; font-weight:600; border-radius:6px; cursor:pointer;">← Quay lại Bước 1</button>
+              <div class="card-title">Chọn Phòng Khám & Khoa</div>
+              <div class="card-sub">Lựa chọn phòng khám, chuyên khoa và bác sĩ phù hợp.</div>
+            </div>
+            <div id="step2Btns" style="display:none; gap:10px; margin-top:8px;">
+              <button class="btn btn-primary" id="step2NextBtn" onclick="goStep(3)" style="padding:8px 12px; font-size:14px;">Tiếp theo →</button>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom:20px; margin-top:20px;">
+            <label>🏥 Chọn Phòng khám/Bệnh viện</label>
+            <div style="display:flex; gap:10px;">
+              <select id="bookingClinicSelect" onchange="handleStep2ClinicChange()" style="flex:1;">
+                <option value="">-- Chọn phòng khám --</option>
+              </select>
+              <button class="btn btn-primary" type="button" onclick="openMapModal()"
+                style="padding: 12px 18px; font-size: 14px; white-space: nowrap;">🗺️ Xem phòng khám gần</button>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom:20px; display:none;" id="step2SpecialtyGroup">
+            <label>🩺 Chọn Chuyên Khoa</label>
+            <select id="bookingSpecialtySelect" onchange="handleStep2SpecialtyChange()" style="width:100%;">
+              <option value="">-- Chọn chuyên khoa --</option>
+            </select>
+          </div>
+
+          <div id="doctorSelectionSection" style="display:none; margin-top:30px;">
+            <label id="step2Title"
+              style="font-weight:600; font-size:16px; margin-bottom:12px; display:block; color:#1e293b;">👨‍⚕️ Chọn Bác sĩ</label>
+            <div id="doctorResult" class="doctor-horizontal-list"></div>
+          </div>
+        </div>
+
+        <!-- Bước 3: Lịch Hẹn -->
+        <div class="card" id="step3" style="display:none">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+            <div>
+              <button class="btn btn-outline" onclick="goStep(2)" style="padding:4px 8px; font-size:13px; margin-bottom:8px; border:none; background:#f1f5f9; color:#64748b; font-weight:600; border-radius:6px; cursor:pointer;">← Quay lại Bước 2</button>
+              <div class="card-title">Chọn Ngày & Giờ Khám</div>
+            </div>
+            <div id="step3Btns" style="display:none; gap:10px; margin-top:8px;">
+              <button class="btn btn-primary" onclick="goStep(4)" style="padding:8px 12px; font-size:14px;">Xác nhận lịch →</button>
+            </div>
+          </div>
+
+          <div id="slotSection" style="margin-top:20px;">
+            <label>📅 Ngày khám</label>
+            <input type="date" id="appointmentDate" style="margin-bottom:16px" onchange="loadSlots()" />
+            <label>⏰ Chọn giờ khám</label>
+            <div class="slot-grid" id="slotGrid"></div>
+          </div>
+        </div>
+
+        <!-- Bước 4: Xác nhận -->
+        <div class="card" id="step4" style="display:none">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+            <div>
+              <button class="btn btn-outline" onclick="goStep(3)" style="padding:4px 8px; font-size:13px; margin-bottom:8px; border:none; background:#f1f5f9; color:#64748b; font-weight:600; border-radius:6px; cursor:pointer;">← Quay lại Bước 3</button>
+              <div class="card-title">Xác Nhận Đặt Lịch</div>
+              <div class="card-sub">Vui lòng kiểm tra lại thông tin.</div>
+            </div>
+            <div style="display:flex; gap:10px; margin-top:8px;">
+              <button class="btn btn-primary" id="btnSubmitBooking" onclick="submitBooking()" style="padding:8px 12px; font-size:14px;">Xác Nhận Đặt Lịch 🚀</button>
+            </div>
+          </div>
+
+          <div id="bookingSummary" style="margin-top:20px; margin-bottom:20px"></div>
+          <div id="bookingAlert"></div>
+        </div>
+
+        <!-- Bước 6: Success -->
+        <div class="card success-card" id="stepSuccess" style="display:none">
+          <div class="success-icon">🎉</div>
+          <div class="success-title">Đặt Lịch Thành Công!</div>
+          <div class="alert alert-success" style="display:inline-block; margin-bottom:20px;">
+            Mã lịch hẹn của bạn: <b id="successBookingCode" style="font-size:20px; letter-spacing:1px;"></b>
+          </div>
+          <div class="success-sub" id="successText"></div>
+          <p style="margin-top:16px; color:#64748b; font-size:14px;">Thông tin chi tiết đã được gửi qua email của bạn.
+          </p>
+          <br />
+          <div style="display:flex; gap:10px; justify-content:center; margin-top:10px;">
+            <button class="btn btn-outline" onclick="resetAll()">📅 Đặt Lịch Mới</button>
+            <button class="btn btn-primary" id="btnManageAppointments" style="display:none;"
+              onclick="showPatientSection('appointments')">📋 Quản Lý Lịch Hẹn</button>
+          </div>
+        </div>
+      </div>
+    </div> <!-- END sectionBooking -->
+
+    <!-- SECTION QUẢN LÝ LỊCH HẸN -->
+    <div id="sectionAppointments" style="display:none">
+        <div class="hero hero-sm">
+          <h1>📋 Quản Lý Lịch Hẹn</h1>
+        </div>
+        <div class="container">
+          <div class="card">
+            <div id="appointmentsList"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION SERVICES, RECORDS, PAYMENTS, AFTERCARE -->
+      <div id="sectionServices" style="display:none">
+        <div class="hero hero-sm">
+          <h1>📋 Danh Mục Dịch Vụ</h1>
+        </div>
+        <div class="container">
+          <div class="card">
+            <div class="form-group">
+              <select id="serviceClinicFilter" onchange="loadServices()">
+                <option value="">Tất cả phòng khám</option>
+              </select>
+            </div>
+            <div id="servicesList" class="services-grid"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="sectionRecords" style="display:none">
+        <div class="hero hero-sm">
+          <h1>🏥 Hồ Sơ Bệnh Án</h1>
+        </div>
+        <div class="container">
+          <div class="card">
+            <div id="recordsList"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="sectionPayments" style="display:none">
+        <div class="hero hero-sm">
+          <h1>💳 Thanh Toán Viện Phí</h1>
+        </div>
+        <div class="container">
+          <div class="card">
+            <div class="card-title">📋 Chưa Thanh Toán</div>
+            <div id="unpaidList"></div>
+          </div>
+          <div class="card" style="margin-top:20px">
+            <div class="card-title">📜 Lịch Sử</div>
+            <div id="paymentHistory"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="sectionAftercare" style="display:none">
+        <div class="hero hero-sm">
+          <h1>💊 Chăm Sóc Sau Khám</h1>
+        </div>
+        <div class="container">
+          <div class="card">
+            <div id="aftercareList"></div>
+          </div>
+        </div>
+      </div>
+    </div> <!-- END patientView -->
+
+
+    <!-- ============================================================
+       DOCTOR VIEW
+       ============================================================ -->
+    <div id="doctorView" style="display:none;">
+      <header style="background: linear-gradient(135deg, #059669 0%, #10b981 100%);">
+        <div class="logo">
+          <div class="logo-icon" style="background:rgba(255,255,255,0.2)">👨‍⚕️</div>
+          <span>MediBook Doctor</span>
+        </div>
+        <div class="header-right">
+          <div class="user-menu" style="display:flex">
+            <span class="user-name" id="headerUserNameDoctor"></span>
+            <button class="btn-header btn-header-danger" onclick="handleLogout()">🚪 Đăng xuất</button>
+          </div>
+        </div>
+      </header>
+
+      <div class="doctor-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+          <div class="sidebar-user">
+            <div class="avatar"
+              style="width:60px; height:60px; font-size:24px; margin-bottom:12px; background:linear-gradient(135deg,#059669,#10b981);">
+              👨‍⚕️</div>
+            <div class="doc-name" id="docNameDisplay">Loading...</div>
+            <div class="doc-spec" id="docSpecDisplay"></div>
+          </div>
+          <nav class="sidebar-nav">
+            <a href="#" class="sidebar-link active" onclick="showDoctorTab('appointments')">📅 Lịch Hẹn Bệnh Nhân</a>
+            <a href="#" class="sidebar-link" onclick="showDoctorTab('messages')">💬 Tin Nhắn</a>
+          </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+          <div id="tabDoctorAppointments">
+            <h2 class="section-title">Lịch Hẹn Của Bạn</h2>
+            <div id="doctorAppointmentsList"></div>
+          </div>
+          <div id="tabDoctorMessages" style="display:none">
+            <h2 class="section-title">Tin Nhắn Từ Bệnh Nhân</h2>
+            <div id="doctorMessagesList"></div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+
+
+    <!-- ============================================================ -->
+
+    <!-- FORGOT PASSWORD MODAL -->
+    <div class="modal-overlay" id="forgotPasswordModal">
+      <div class="modal" style="max-width:400px;">
+        <button class="modal-close" onclick="closeForgotModal()">✕</button>
+        <div class="modal-header">
+          <div class="modal-header-icon blue" id="forgotModalIcon">🔐</div>
+          <div class="modal-title" id="forgotModalTitle">Khôi phục mật khẩu</div>
+        </div>
+        <div class="modal-body">
+          <div class="form-message" id="forgotMessage"></div>
+          
+          <!-- Bước 1: Nhập email để lấy OTP -->
+          <div id="forgotStep1">
+            <p style="font-size:14px; color:#666; margin-bottom:16px;">Vui lòng nhập email đăng ký để nhận mã khôi phục (OTP).</p>
+            <div class="form-group">
+              <label>📧 Email của bạn</label>
+              <input type="email" id="forgotEmail" placeholder="Nhập email" />
+            </div>
+            <button class="btn btn-primary btn-full" id="btnRequestOtp" onclick="handleRequestOtp()">Gửi mã xác nhận</button>
+          </div>
+
+          <!-- Bước 2: Nhập OTP và Mật khẩu mới -->
+          <div id="forgotStep2" style="display:none;">
+            <p style="font-size:14px; color:#666; margin-bottom:16px;">Mã OTP đã được gửi đến email của bạn. Vui lòng kiểm tra hộp thư.</p>
+            <div class="form-group">
+              <label>🔐 Mã xác nhận (OTP)</label>
+              <input type="text" id="forgotOtp" placeholder="Nhập mã 6 số" />
+            </div>
+            <div class="form-group">
+              <label>🔒 Mật khẩu mới</label>
+              <input type="password" id="forgotNewPassword" placeholder="Nhập mật khẩu mới" />
+            </div>
+            <button class="btn btn-success btn-full" id="btnResetPassword" onclick="handleResetPassword()">Lưu mật khẩu mới</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REGISTRATION MODAL -->
+    <div class="modal-overlay" id="regModal">
+      <div class="modal">
+        <button class="modal-close" onclick="closeRegModal()">✕</button>
+        <div class="modal-header">
+          <div class="modal-header-icon blue" id="regModalIcon">✨</div>
+          <div class="modal-title" id="regModalTitle">Đăng ký</div>
+        </div>
+        <div class="modal-body">
+          <div class="form-message" id="regMessage"></div>
+
+          <!-- Dùng chung -->
+          <div class="form-row">
+            <div class="form-group"><label>👤 Họ và tên</label><input type="text" id="regName"
+                placeholder="Tên của bạn" /></div>
+            <div class="form-group"><label>🪪 Tên đăng nhập</label><input type="text" id="regUsername"
+                placeholder="Không dấu, viết liền" /></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>📧 Email</label><input type="email" id="regEmail"
+                placeholder="email@domain.com" /></div>
+            <div class="form-group"><label>📱 Số điện thoại</label><input type="tel" id="regPhone"
+                placeholder="0901234567" /></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>🪪 Số CCCD</label><input type="text" id="regCCCD" placeholder="Số CCCD" /></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>⚧ Giới tính</label>
+              <select id="regGender">
+                <option value="">Chọn giới tính</option>
+                <option value="male">Nam</option>
+                <option value="female">Nữ</option>
+                <option value="other">Khác</option>
+              </select>
+            </div>
+            <div class="form-group"><label>🎂 Ngày sinh</label><input type="date" id="regDob" /></div>
+          </div>
+
+          <!-- Dành riêng cho Bác sĩ -->
+          <div id="regDoctorFields" style="display:none;">
+            <div class="form-row">
+              <div class="form-group">
+                <label>🔬 Chuyên khoa</label>
+                <select id="regSpecialty">
+                  <option value="Nội tổng quát">Nội tổng quát</option>
+                  <option value="Tim mạch">Tim mạch</option>
+                  <option value="Nhi khoa">Nhi khoa</option>
+                </select>
+              </div>
+              <div class="form-group"><label>🎓 Số năm KN</label><input type="number" id="regExp" placeholder="VD: 5" />
+              </div>
+            </div>
+            <div class="form-group"><label>📜 Số GPHN</label><input type="text" id="regLicense"
+                placeholder="Số giấy phép hành nghề" /></div>
+            <div class="form-group"><label>🏫 Nơi công tác</label><input type="text" id="regCert"
+                placeholder="ĐH Y Dược..." /></div>
+            <div class="form-group"><label>🏥 Phòng khám ĐK</label><select id="regClinic"></select></div>
+          </div>
+
+          <!-- Mật khẩu -->
+          <div class="form-group">
+            <label>🔒 Mật khẩu</label>
+            <input type="password" id="regPassword" placeholder="Nhập mật khẩu (tối thiểu 6 ký tự)" />
+          </div>
+
+          <button class="btn btn-success btn-full" id="btnSubmitReg" onclick="handleRegistration()">✨ Tạo Tài
+            Khoản</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PATIENT MODALS: PROFILE, PAYMENT, PATIENT MESSAGE -->
+    <div class="modal-overlay" id="profileModal">
+      <div class="modal modal-lg">
+        <button class="modal-close" onclick="closeProfileModal()">✕</button>
+        <div class="modal-header">
+          <div class="modal-header-icon green">👤</div>
+          <div class="modal-title">Thông Tin Cá Nhân</div>
+        </div>
+        <div class="modal-body">
+          <div class="form-message" id="profileMessage"></div>
+          <div class="form-group"><label>👤 Họ và tên</label><input type="text" id="profileName" /></div>
+          <div class="form-group"><label>📧 Email</label><input type="email" id="profileEmail" /></div>
+          <div class="form-group"><label>📱 Số điện thoại</label><input type="tel" id="profilePhone" /></div>
+          <div class="form-group"><label>🪪 CCCD/CMND</label><input type="text" id="profileCCCD" /></div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>⚧ Giới tính</label>
+              <select id="profileGender">
+                <option value="">Chọn giới tính</option>
+                <option value="male">Nam</option>
+                <option value="female">Nữ</option>
+                <option value="other">Khác</option>
+              </select>
+            </div>
+            <div class="form-group"><label>🎂 Ngày sinh</label><input type="date" id="profileDob" /></div>
+          </div>
+          <button class="btn btn-primary btn-full" onclick="handleUpdateProfile()">💾 Lưu Thay Đổi</button>
+          <hr style="margin:20px 0" />
+          <h4>Lịch sử đặt lịch</h4>
+          <div id="appointmentHistory"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DOCTOR MODALS: MEDICAL RECORD, MESSAGE THREAD -->
+    <div class="modal-overlay" id="recordModal">
+      <div class="modal modal-lg">
+        <button class="modal-close" onclick="closeRecordModal()">✕</button>
+        <div class="modal-header">
+          <div class="modal-header-icon green">📝</div>
+          <div class="modal-title">Lập Hồ Sơ Bệnh Án</div>
+          <div class="modal-sub" id="recordModalSub"></div>
+        </div>
+        <div class="modal-body">
+          <div class="form-message" id="recordAlert"></div>
+          <div class="form-group"><label>🔍 Chẩn đoán</label><textarea id="recordDiagnosis" rows="2"></textarea></div>
+          <div class="form-group"><label>💊 Đơn thuốc</label><textarea id="recordPrescription" rows="3"></textarea>
+          </div>
+          <div class="form-group"><label>📝 Lời dặn</label><textarea id="recordNotes" rows="2"></textarea></div>
+          <hr style="margin:20px 0" />
+          <h4>Chăm sóc sau khám</h4>
+          <div class="form-group"><label>📋 Hướng dẫn</label><textarea id="recordAftercare" rows="2"></textarea></div>
+          <div class="form-group"><label>📅 Lịch tái khám</label><input type="date" id="recordFollowUp" /></div>
+          <button class="btn btn-success btn-full" onclick="saveMedicalRecord()">✅ Lưu Hồ Sơ</button>
+        </div>
+      </div>
+    </div>
+
+
+
+    <div class="modal-overlay" id="messageModal">
+      <div class="modal">
+        <button class="modal-close" onclick="closeMessageModal()">✕</button>
+        <div class="modal-header">
+          <div class="modal-header-icon blue">💬</div>
+          <div class="modal-title">Tin Nhắn</div>
+          <div class="modal-sub" id="messageModalSub"></div>
+        </div>
+        <div class="modal-body">
+          <div class="form-message" id="messageAlert"></div>
+          <div id="messageThread" class="message-thread"></div>
+          <div class="form-group" style="margin-top:16px">
+            <textarea id="messageContent" rows="3" placeholder="Nhập tin nhắn..."></textarea>
+          </div>
+          <button class="btn btn-primary" style="width:100%" onclick="sendMessage()">Gửi tin nhắn ✈️</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESCHEDULE MODAL -->
+    <div class="modal-overlay" id="rescheduleModal">
+      <div class="modal">
+        <button class="modal-close" onclick="closeRescheduleModal()">✕</button>
+        <div class="modal-header">
+          <div class="modal-header-icon bg-amber">⏰</div>
+          <div class="modal-title">Đổi Ngày Giờ Khám</div>
+          <div class="modal-sub">Vui lòng chọn ngày và giờ khám mới</div>
+        </div>
+        <div class="modal-body">
+          <div id="rescheduleAlert"></div>
+          <div class="form-group">
+            <label>📅 Ngày khám mới</label>
+            <input type="date" id="rescheduleDate" onchange="loadRescheduleSlots()" />
+          </div>
+          <div class="form-group">
+            <label>⏰ Chọn giờ mới</label>
+            <div class="slot-grid" id="rescheduleSlotGrid"></div>
+          </div>
+          <div style="display:flex; gap:10px; margin-top:20px">
+            <button class="btn btn-outline" style="flex:1" onclick="closeRescheduleModal()">Hủy</button>
+            <button class="btn btn-primary" style="flex:1" onclick="confirmReschedule()">Xác nhận đổi</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAYMENT MODAL -->
+    <div class="modal-overlay" id="paymentModal">
+      <div class="modal">
+        <button class="modal-close" onclick="closePaymentModal()">✕</button>
+        <div class="modal-header">
+          <div class="modal-header-icon green">💳</div>
+          <div class="modal-title">Thanh Toán Viện Phí</div>
+        </div>
+        <div class="modal-body">
+          <div class="form-message" id="paymentAlert"></div>
+          <div id="paymentDetails" style="margin-bottom:16px"></div>
+          <div class="form-group">
+            <label>💰 Số tiền (VNĐ)</label>
+            <input type="number" id="paymentAmount" value="200000" />
+          </div>
+          <div class="form-group">
+            <label>📱 Phương thức</label>
+            <div class="payment-methods">
+              <label class="payment-method selected" onclick="selectPaymentMethod('cash', this)">💵 Tiền mặt</label>
+              <label class="payment-method" onclick="selectPaymentMethod('card', this)">💳 Thẻ</label>
+            </div>
+          </div>
+          <button class="btn btn-success btn-full" onclick="handlePayment()">✅ Xác Nhận Thanh Toán</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================
+       CLINIC MAP MODAL – Redesigned
+       ============================================================ -->
+    <div class="modal-overlay" id="mapModal">
+      <div class="modal modal-lg"
+        style="max-width:92vw; width:1200px; height:88vh; padding:0; display:flex; flex-direction:column; overflow:hidden; border-radius:20px;">
+        <button class="map-close-btn" onclick="closeMapModal()">✕</button>
+
+        <div class="map-modal-body">
+          <!-- Sidebar -->
+          <div class="map-sidebar">
+            <div class="map-sidebar-header">
+              <h2>🏥 Tìm Phòng Khám</h2>
+              <p>Chọn phòng khám gần bạn nhất hoặc nhấn vào bản đồ</p>
+            </div>
+
+            <!-- Location status -->
+            <div class="map-location-bar" id="mapLocationBar">
+              <span class="map-location-dot"></span>
+              <span id="mapLocationText">Đang xác định vị trí...</span>
+            </div>
+
+            <!-- Toolbar -->
+            <div class="map-toolbar">
+              <input type="text" id="mapSearchInput" class="map-search-input"
+                placeholder="🔍 Tìm phòng khám..." oninput="filterMapCards()" />
+              <button class="map-toolbar-btn btn-locate" onclick="locateUserOnMap()" title="Vị trí của bạn">
+                📍 Vị trí
+              </button>
+            </div>
+
+            <!-- Clinic list -->
+            <div class="map-clinic-list" id="mapClinicList">
+              <!-- Loading skeleton -->
+              <div class="map-loading-card"><div class="skel-line"></div><div class="skel-line"></div><div class="skel-line"></div></div>
+              <div class="map-loading-card"><div class="skel-line"></div><div class="skel-line"></div><div class="skel-line"></div></div>
+              <div class="map-loading-card"><div class="skel-line"></div><div class="skel-line"></div><div class="skel-line"></div></div>
+            </div>
+          </div>
+
+          <!-- Map container -->
+          <div class="map-container">
+            <div id="leafletMap" style="height:100%; width:100%;"></div>
+
+            <!-- Click instruction -->
+            <div class="map-instruction" id="mapInstruction">
+              <span class="dot-ping"></span>
+              Nhấn vào bản đồ để chọn vị trí hoặc bấm Vị trí
+            </div>
+
+            <!-- Selected clinic banner -->
+            <div class="map-selected-banner" id="mapSelectedBanner">
+              <div class="map-banner-info">
+                <strong id="mapBannerName">—</strong>
+                <small id="mapBannerAddress">—</small>
+              </div>
+              <button class="map-banner-confirm" onclick="confirmMapSelection()">
+                ✅ Chọn phòng khám này →
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    </div>
+
+    <!-- Modal Tra cứu (Lookup) -->
+    <div class="modal-overlay" id="lookupModal">
+      <div class="modal" style="max-width:500px;">
+        <button class="modal-close" onclick="closeLookupModal()">×</button>
+        <div class="modal-header">
+          <div class="modal-title">🔍 Tra cứu lịch hẹn</div>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Nhập Mã lịch hẹn của bạn</label>
+            <div style="display:flex; gap:10px;">
+              <input type="text" id="lookupCodeInput" placeholder="Ví dụ: MB-20261109-0001" style="flex:1;" />
+              <button class="btn btn-primary" onclick="lookupAppointment()">Tìm kiếm</button>
+            </div>
+            <div id="lookupAlert" style="margin-top:10px;"></div>
+          </div>
+          <div id="lookupResult" style="display:none; margin-top:20px; padding:16px; background:#f8fafc; border-radius:8px; border:1px solid #e2e8f0;">
+            <h3 style="font-size:16px; margin-bottom:12px; color:#0f172a;">Thông tin lịch hẹn</h3>
+            <div style="font-size:14px; color:#475569; line-height:1.6;" id="lookupDetails">
+              <!-- Details rendered here -->
+            </div>
+            <div style="display:flex; gap:10px; margin-top:16px;" id="lookupActions">
+              <button class="btn btn-outline" style="flex:1;" onclick="startEditAppointmentFromLookup()">✏️ Sửa lịch</button>
+              <button class="btn btn-danger" style="flex:1;" onclick="cancelGuestApptFromLookup()">🗑️ Hủy lịch</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ============================================================
+       ADMIN VIEW
+       ============================================================ -->
+    <div id="adminView" class="admin-layout" style="display:none;">
+        <div class="app-container">
+            <!-- Sidebar -->
+            <aside class="sidebar admin-sidebar">
+                <div class="sidebar-header">
+                    <div class="logo-icon"><span style="color:#ef4444; font-weight:900; font-size:20px;">✚</span></div>
+                    <h2>MediBook</h2>
+                </div>
+                <ul class="sidebar-menu">
+                    <li class="menu-item active" data-target="dashboard">
+                        <i class="fa-solid fa-house"></i> <span>Dashboard</span>
+                    </li>
+                    <li class="menu-item" data-target="doctor">
+                        <i class="fa-solid fa-user-doctor"></i> <span>Quản lý bác sĩ</span>
+                    </li>
+                    <li class="menu-item" data-target="patient">
+                        <i class="fa-solid fa-user-group"></i> <span>Quản lý bệnh nhân</span>
+                    </li>
+                    <!-- Đã xóa mục Quản lý lịch khám, Chuyên khoa, Thanh toán -->
+                    <li class="menu-item" data-target="report">
+                        <i class="fa-solid fa-chart-pie"></i> <span>Báo cáo</span>
+                    </li>
+                    <li class="menu-item" data-target="setting">
+                        <i class="fa-solid fa-gear"></i> <span>Cài đặt</span>
+                    </li>
+                </ul>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="main-content admin-main-content">
+                <!-- Header -->
+                <header class="top-header admin-header">
+                    <div class="header-left">
+                        <h1 id="page-title" style="color:var(--text)">Dashboard</h1>
+                    </div>
+                    <div class="header-right">
+                        <div class="notification" style="cursor: pointer;" onclick="alert('Hiện tại không có thông báo mới nào!')">
+                            <i class="fa-regular fa-bell"></i>
+                            <span class="badge" style="background:#ccc;">0</span>
+                        </div>
+                        <div class="user-profile">
+                            <img src="https://i.pravatar.cc/150?img=11" alt="Admin Avatar" class="avatar">
+                            <div class="user-info">
+                                <span class="user-name" style="color:var(--text)">Admin</span>
+                                <span class="user-role" style="font-size:12px">Quản trị viên</span>
+                            </div>
+                        </div>
+                        <button class="btn-header btn-header-danger" onclick="handleLogout()" title="Đăng xuất" style="margin-left:10px;">🚪 Thoát</button>
+                    </div>
+                </header>
+
+                <!-- Page Content Area -->
+                <div class="content-area">
+                    <!-- Dashboard -->
+                    <section id="dashboard" class="page-section admin-section active">
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-icon doctor-icon"><i class="fa-solid fa-user-doctor"></i></div>
+                                <div class="stat-details">
+                                    <p class="stat-title">Tổng bác sĩ</p>
+                                    <p class="stat-number" id="adminStatDoctors">0</p>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon patient-icon"><i class="fa-solid fa-user-group"></i></div>
+                                <div class="stat-details">
+                                    <p class="stat-title">Tổng bệnh nhân</p>
+                                    <p class="stat-number" id="adminStatPatients">0</p>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon appointment-icon"><i class="fa-solid fa-calendar-day"></i></div>
+                                <div class="stat-details">
+                                    <p class="stat-title">Lịch khám</p>
+                                    <p class="stat-number" id="adminStatApps">0</p>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon revenue-icon"><i class="fa-solid fa-sack-dollar"></i></div>
+                                <div class="stat-details">
+                                    <p class="stat-title">Tổng doanh thu</p>
+                                    <p class="stat-number" id="adminStatRevenue">0đ</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="charts-grid">
+                            <div class="chart-container">
+                                <div class="chart-header">
+                                    <h3>Thống kê doanh thu (Triệu VNĐ)</h3>
+                                    <select class="chart-filter"><option>Năm 2026</option></select>
+                                </div>
+                                <div class="canvas-wrapper">
+                                    <canvas id="revenueChart"></canvas>
+                                </div>
+                            </div>
+                            <div class="chart-container">
+                                <div class="chart-header">
+                                    <h3>Trạng thái lịch khám</h3>
+                                    <select class="chart-filter"><option>Tuần này</option></select>
+                                </div>
+                                <div class="canvas-wrapper">
+                                    <canvas id="appointmentChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Quản lý bác sĩ -->
+                    <section id="doctor" class="page-section admin-section">
+                        <div class="panel">
+                            <div class="panel-header">
+                                <h2>Thông tin bác sĩ</h2>
+                                <div class="panel-actions">
+                                    <button class="btn btn-primary"><i class="fa-solid fa-plus"></i> Thêm mới</button>
+                                    <button class="btn btn-secondary"><i class="fa-solid fa-pen"></i> Chỉnh sửa</button>
+                                    <button class="btn btn-danger"><i class="fa-solid fa-trash"></i> Xóa</button>
+                                </div>
+                            </div>
+                            <div class="panel-body">
+                                <form class="data-form">
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label>Mã bác sĩ</label>
+                                            <input type="text" placeholder="VD: BS001">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Họ tên</label>
+                                            <input type="text" placeholder="Nhập họ tên">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Chuyên khoa</label>
+                                            <select>
+                                                <option>Nội khoa</option>
+                                                <option>Ngoại khoa</option>
+                                                <option>Nhi khoa</option>
+                                                <option>Sản phụ khoa</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label>Số điện thoại</label>
+                                            <input type="text" placeholder="Nhập SĐT">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Email</label>
+                                            <input type="email" placeholder="Nhập email">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Trạng thái</label>
+                                            <select>
+                                                <option>Đang làm việc</option>
+                                                <option>Nghỉ phép</option>
+                                                <option>Đã nghỉ việc</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group full-width">
+                                            <label>Ảnh đại diện</label>
+                                            <div class="file-upload-wrapper">
+                                                <input type="file" class="file-input" id="doctor-avatar">
+                                                <label for="doctor-avatar" class="file-upload-label">
+                                                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                                                    <span>Chọn file hoặc kéo thả vào đây</span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+
+                                <div class="table-container mt-4">
+                                    <div class="table-controls">
+                                        <div class="search-box">
+                                            <i class="fa-solid fa-search"></i>
+                                            <input type="text" placeholder="Tìm kiếm theo tên, mã BS...">
+                                        </div>
+                                        <div class="filter-box">
+                                            <select><option>Tất cả chuyên khoa</option></select>
+                                        </div>
+                                    </div>
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th><input type="checkbox"></th>
+                                                <th>Mã BS</th>
+                                                <th>Họ tên</th>
+                                                <th>Chuyên khoa</th>
+                                                <th>Số điện thoại</th>
+                                                <th>Trạng thái</th>
+                                                <th>Hành động</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="adminDoctorTableBody">
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Quản lý bệnh nhân -->
+                    <section id="patient" class="page-section admin-section">
+                        <div class="panel">
+                            <div class="panel-header">
+                                <h2>Thông tin bệnh nhân</h2>
+                                <div class="panel-actions">
+                                    <button class="btn btn-primary"><i class="fa-solid fa-plus"></i> Thêm</button>
+                                    <button class="btn btn-secondary"><i class="fa-solid fa-pen"></i> Sửa</button>
+                                    <button class="btn btn-danger"><i class="fa-solid fa-trash"></i> Xóa</button>
+                                </div>
+                            </div>
+                            <div class="panel-body">
+                                <form class="data-form">
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label>Mã bệnh nhân</label>
+                                            <input type="text" placeholder="VD: BN001">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Họ tên</label>
+                                            <input type="text" placeholder="Nhập họ tên">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Ngày sinh</label>
+                                            <input type="date">
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label>Giới tính</label>
+                                            <select>
+                                                <option>Nam</option>
+                                                <option>Nữ</option>
+                                                <option>Khác</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Số điện thoại</label>
+                                            <input type="text" placeholder="Nhập SĐT">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Địa chỉ</label>
+                                            <input type="text" placeholder="Nhập địa chỉ">
+                                        </div>
+                                    </div>
+                                </form>
+                                
+                                <div class="table-container mt-4">
+                                    <div class="table-controls">
+                                        <div class="search-box">
+                                            <i class="fa-solid fa-search"></i>
+                                            <input type="text" placeholder="Tìm kiếm bệnh nhân...">
+                                        </div>
+                                    </div>
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th><input type="checkbox"></th>
+                                                <th>Mã BN</th>
+                                                <th>Họ tên</th>
+                                                <th>Ngày sinh</th>
+                                                <th>Giới tính</th>
+                                                <th>Số điện thoại</th>
+                                                <th>Hành động</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="adminPatientTableBody">
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Removed Appointment from Admin -->
+
+                    <!-- Báo cáo -->
+                    <section id="report" class="page-section admin-section">
+                        <div class="panel">
+                            <div class="panel-header">
+                                <h2>Báo cáo tổng hợp</h2>
+                                <div class="panel-actions">
+                                    <button class="btn btn-danger"><i class="fa-solid fa-file-pdf"></i> Xuất PDF</button>
+                                    <button class="btn btn-success"><i class="fa-solid fa-file-excel"></i> Xuất Excel</button>
+                                </div>
+                            </div>
+                            <div class="panel-body">
+                                <div class="stats-grid mb-4">
+                                    <div class="stat-card">
+                                        <div class="stat-icon appointment-icon"><i class="fa-solid fa-calendar-check"></i></div>
+                                        <div class="stat-details">
+                                            <p class="stat-title">Số lịch khám</p>
+                                            <p class="stat-number">1,450</p>
+                                        </div>
+                                    </div>
+                                    <div class="stat-card">
+                                        <div class="stat-icon revenue-icon"><i class="fa-solid fa-money-bill-trend-up"></i></div>
+                                        <div class="stat-details">
+                                            <p class="stat-title">Doanh thu</p>
+                                            <p class="stat-number">850,000,000đ</p>
+                                        </div>
+                                    </div>
+                                    <div class="stat-card">
+                                        <div class="stat-icon patient-icon"><i class="fa-solid fa-user-plus"></i></div>
+                                        <div class="stat-details">
+                                            <p class="stat-title">Bệnh nhân mới</p>
+                                            <p class="stat-number">120</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="table-container">
+                                    <h3>Lịch sử giao dịch gần đây</h3>
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Mã GD</th>
+                                                <th>Ngày</th>
+                                                <th>Nội dung</th>
+                                                <th>Số tiền</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>GD9821</td>
+                                                <td>15/06/2026</td>
+                                                <td>Thanh toán khám bệnh (Lê Văn C)</td>
+                                                <td class="text-success">+ 500,000đ</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Removed Specialty from Admin -->
+
+                    <!-- Cài đặt -->
+                    <section id="setting" class="page-section admin-section">
+                        <div class="panel">
+                            <div class="panel-header">
+                                <h2>Cài đặt hệ thống</h2>
+                            </div>
+                            <div class="panel-body">
+                                <p class="placeholder-text">Chức năng đang được phát triển...</p>
+                            </div>
+                        </div>
+                    </section>
+
+                </div>
+            </main>
+        </div>
+    </div>
+
+
+    <script src="/static/script.js?v=15"></script>
+</body>
+
+</html>
