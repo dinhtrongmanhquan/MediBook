@@ -3654,3 +3654,210 @@ input.input-success:focus {
         grid-template-columns: 1fr;
     }
 }
+
+/* ============================================================
+   MOBILE RESPONSIVENESS (Added)
+   ============================================================ */
+
+@media (max-width: 768px) {
+  /* Header & Navigation */
+  header {
+    padding: 0 16px;
+    height: auto;
+    min-height: 64px;
+    flex-wrap: wrap;
+  }
+  
+  .header-nav {
+    display: none; /* Hide default nav on mobile, would need a hamburger menu in JS ideally */
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .header-nav.active {
+    display: flex;
+    flex-direction: row;
+    gap: 12px;
+  }
+  
+  .header-right {
+    margin-left: auto;
+  }
+
+  .user-menu {
+    gap: 5px;
+  }
+  
+  .user-name {
+    display: none; /* Hide username on small screens to save space */
+  }
+
+  /* Gateway Hero */
+  .gateway-hero-title {
+    font-size: 32px;
+  }
+
+  .gateway-hero-sub {
+    font-size: 14px;
+    padding: 0 16px;
+  }
+
+  .gateway-card {
+    padding: 20px 16px;
+    margin: 0 16px;
+    width: auto;
+    border-radius: 16px;
+  }
+
+  /* Forms & Grid Layouts */
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .auth-tabs {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  
+  .auth-tab {
+    flex: 1 1 30%;
+    padding: 8px 4px;
+    font-size: 11px;
+  }
+
+  /* Containers & Cards */
+  .container {
+    margin-top: -20px;
+  }
+  
+  .card {
+    padding: 20px 16px;
+  }
+
+  .hero h1 {
+    font-size: 32px;
+  }
+
+  .hero p {
+    font-size: 14px;
+  }
+
+  /* Steps Indicator */
+  .steps-wrap {
+    gap: 4px;
+  }
+  
+  .step-line {
+    width: 20px;
+  }
+  
+  .step-label {
+    display: none; /* Hide step labels on mobile to save horizontal space */
+  }
+
+  /* Doctor Layout */
+  .doctor-layout {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    min-height: auto;
+    padding: 16px;
+  }
+
+  .sidebar-nav {
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    gap: 8px;
+    padding-bottom: 8px;
+  }
+
+  .sidebar-link {
+    margin-bottom: 0;
+    white-space: nowrap;
+  }
+
+  .main-content {
+    padding: 16px;
+  }
+
+  /* Modals */
+  .modal {
+    width: 95%;
+    max-width: 100%;
+    padding: 0;
+  }
+  
+  .modal-body {
+    padding: 16px;
+  }
+  
+  .modal-header {
+    padding: 20px 16px 0;
+  }
+  
+  .modal-title {
+    font-size: 20px;
+  }
+
+  /* Map Modal Adjustments */
+  .map-modal-body {
+    flex-direction: column;
+  }
+
+  .map-sidebar {
+    width: 100%;
+    height: 40vh; /* Takes up 40% of screen height */
+    min-width: unset;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .map-content {
+    height: 60vh;
+  }
+
+  /* Time Slots */
+  .slot-grid {
+    justify-content: center;
+  }
+  
+  .slot {
+    flex: 1 1 calc(33.33% - 8px);
+    text-align: center;
+    padding: 8px 4px;
+    font-size: 12px;
+  }
+
+  /* General Adjustments */
+  .btn {
+    padding: 12px 20px;
+  }
+
+  /* Patient Step 1 Radio Buttons */
+  #step1 .form-group > div[style*="display:flex"] {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Extra small screens */
+  .slot {
+    flex: 1 1 calc(50% - 8px);
+  }
+  
+  .gateway-hero-title {
+    font-size: 28px;
+  }
+  
+  .logo span {
+    font-size: 18px;
+  }
+}
